@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <style type="text/css">
+        #contacts table{
+            width: 100%;
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+        }
+        #contacts table tr td{
+            border: 1px solid #ccc;
+            font-size: 12px
+        }
+    </style>
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script type="text/javascript" charset="utf-8" src="jquery.js"></script>
+    <title>Hello PhoneGap</title>
+    <script type="text/javascript" charset="utf-8">
+        function loadImage() {
+            //拍照并显示在屏幕
+            navigator.camera.getPicture(onLoadImageSuccess, onLoadImageFail, {destinationType: Camera.DestinationType.DATA_URL});
+
+        }
+        //拍照成功后回调
+        function onLoadImageSuccess(imageURI) {
+            //这里的图片经过了base64编码
+            var src = "data:image/jpeg;base64," + imageURI;
+            $("#getImage").attr("src", src);
+            $("#getImage").show();
+        }
+        //所有获取图片失败都回调此函数
+        function onLoadImageFail(message) {
+            navigator.notification.alert("拍照失败，原因：" + message, null, "警告");
+        }
+        function loadImageLocal() {
+            //获取本地图片并显示在屏幕
+            navigator.camera.getPicture(onLoadImageLocalSuccess, onLoadImageFail, {
+                destinationType: Camera.DestinationType.FILE_URI,
+                sourceType: Camera.PictureSourceType.PHOTOLIBRARY
+            });
+        }
+        //本地图片选择成功后回调此函数
+        function onLoadImageLocalSuccess(imageURI) {
+            $("#getImageLocal").attr("src", encodeURI(imageURI));
+            $("#getImageLocal").show();
+        }
+        function loadImageUpload() {
+            //拍照上传并显示在屏幕
+            navigator.camera.getPicture(onLoadImageUploadSuccess, onLoadImageFail, {
+                destinationType: Camera.DestinationType.FILE_URI
+            });
+        }
+        //图片拍照成功后回调此函数
+        function onLoadImageUploadSuccess(imageURI) {
+            //此处执行文件上传的操作，上传成功后执行下面代码
+            var options = new FileUploadOptions(); //文件参数选项
+            options.fileKey = "file";//向服务端传递的file参数的parameter name
+            options.fileName = imageURI.substr(imageURI.lastIndexOf('/') + 1);//文件名
+            options.mimeType = "image/jpeg";//文件格式，默认为image/jpeg
+            var ft = new FileTransfer();//文件上传类
+            ft.onprogress = function (progressEvt) {//显示上传进度条
+                if (progressEvt.lengthComputable) {
+                    navigator.notification.progressValue(Math.round(( progressEvt.loaded / progressEvt.total ) * 100));
+                }
+            }
+            navigator.notification.progressStart("提醒", "当前上传进度");
+            ft.upload(imageURI, encodeURI('http://192.168.1.28:80/upload_file.php'), function () {
+                navigator.notification.progressStop();//停止进度条
+                $("#getImageUpload").attr("src", imageURI);
+                $("#getImageUpload").show();
+                navigator.notification.alert("文件上传成功！", null, "提醒");
+            }, null, options);
+        }
+
+        function findContact(){
+            var options = new ContactFindOptions();
+            options.filter = "";   // 过滤条件
+            options.multiple = true; // 是否 查询多个
+            var fields = ["displayName","name","phoneNumbers"]; // 查找关键字  displayName：姓名， phoneNumbers：电话号码
+            navigator.contacts.find(fields,onSuccess,onFail,options)
+        }
+
+        function onSuccess(contacts){   // 满足条件的所有联系人的姓名和电话号码
+            var aResult = [], html="";
+            if(contacts.length>0){
+                for(var i=0; i<contacts.length;i++){
+                    var displayName = contacts[i].displayName;
+                    for(var j=0; j<contacts[i].phoneNumbers.length;j++){
+                         var values = contacts[i].phoneNumbers[j].value;
+                    }
+                    aResult.push({
+                        name:displayName,
+                        values:values
+                    })
+                }
+            }
+            html = "<table><tbody>"
+            for(var k=0; k<aResult.length; k++){            
+                html += "<tr><td>"+aResult[k].name+"</td><td>"+aResult[k].values+"</td></tr>"
+            } 
+            html += "</tbody></table>"   
+            $("#contacts").append(html)
+        }
+
+        function onFail(contactError){
+            alert("onError")
+        }
+
+        function storage(){
+            var db = window.openDatabase("PHONE","1.0","PHONE DEMO",200000) // 
+            db.transaction(function(tx){
+                tx.executeSql('DROP TABLE DEMO IF EXISTS');
+            })
+            db.transaction(function(tx){
+                tx.executeSql("create table if not exists DEMO (name TEXT, time INTEGER)")
+            })
+            
+            db.transaction(function(tx){
+                var sql = document.getElementById("txt").value
+               // tx.executeSql('insert into DEMO(id, name) values(1,"andy")')
+                var time = new Date();
+                tx.executeSql('insert into DEMO (name,time) values (?,?)',[sql,time.toLocaleString()],function(tx,result){},function(tx,result){})
+            })
+            db.transaction(function(tx){
+                tx.executeSql("select * from DEMO",[],function(tx,r){
+                    var rs = r.rows, arr=[];
+                    for(var i=0; i<rs.length;i++){
+                        arr.push(rs.item(i))
+                    }
+                    var item = arr.pop()
+                    $('#storage').html('welcome '+item.name+"---"+item.time)
+                },function(err){
+                    alert(err.code)
+                })
+            })
+
+        }
+
+        /*function geolocation(){
+            navigator.geolocation.getCurrentPosition(onPosition,onError)
+        }*/
+
+        function notification(){
+            navigator.notification.confirm("您确定要退出程序吗？",showConfirm,"退出程序","确定,取消")
+        }
+        function showConfirm(button){
+            if(button==1){
+                //document.removeEventListener("backbutton", eventBackButton, false);
+                navigator.app.exitApp();
+            }
+        }
+    </script>
+</head>
+<body>
+<h1>Hello PhoneGap</h1>
+
+<p>
+    <input type="button" value="拍照" onclick="loadImage();"/>
+    <img src="" id="getImage" style="display: none;width: 120px;height: 120px;"/>
+</p>
+
+<p>
+    <input type="button" value="本地图片" onclick="loadImageLocal();"/>
+    <img src="" id="getImageLocal" style="display: none;width: 120px;height: 120px;"/>
+</p>
+
+<p>
+    <input type="button" value="拍照上传" onclick="loadImageUpload();"/>
+    <img src="" id="getImageUpload" style="display: none;width: 120px;height: 120px;"/>
+</p>
+<p>
+    <input type="button" value="查找联系人" onclick="findContact();"/>
+    <div id="contacts"></div>
+</p>
+<p>
+    <input type="button" value="对设备的存储选项访问" onclick="storage();"/><input id="txt" type="text" value="">
+    <div id="storage"></div>
+</p>
+<p>
+    <input type="button" value="notification" onclick="notification();"/>
+</p>
+</body>
+</html>
