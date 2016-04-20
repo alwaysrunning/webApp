@@ -8,3 +8,5 @@ phonegap是基于HTML和Javascript开发的应用平台
 
 
 (phonegap打包 ：http://www.qdkf.net/15.html)
+
+http://www.phonegapcn.com/
