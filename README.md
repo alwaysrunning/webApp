@@ -1,12 +1,10 @@
 # webApp
 
-phonegap是基于HTML和Javascript开发的应用平台
+cordova是基于HTML和Javascript开发的跨平台移动应用框架，能够将html,css,js打包成一个移动应用程序
 
-它是一款移动框架，能够将html,css,js打包成一个移动应用程序
+它提供一组核心API接口, 可以通过js直接调用底层方法，通过底层方法来访问原生设备（如摄像头）
 
-它提供一组API,打包好的移动应用程序可以通过js直接访问原生的设备功能（如摄像头）
+如果需要丰富功能，就需要扩展接口、添加插件(hybrid app)
 
 
-(phonegap打包 ：http://blog.csdn.net/wuyt2008/article/details/9259047?ADUIN=791086980&ADSESSION=1394767538&ADTAG=CLIENT.QQ.5281_.0&ADPUBNO=26292#)
-
-http://www.phonegapcn.com/
+通过命令行来创建cordova工程  http://www.cordova.org.cn/docs/docs/zh-cn/latest/
