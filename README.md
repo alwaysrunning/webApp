@@ -8,3 +8,5 @@ cordova是基于HTML和Javascript开发的跨平台移动应用框架，能够�
 
 
 通过命令行来创建cordova工程  http://www.cordova.org.cn/docs/docs/zh-cn/latest/
+
+APK 打包签名 http://www.07net01.com/program/2016/03/1384059.html
